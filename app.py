@@ -1,19 +1,20 @@
 # pip install streamlit fbprophet yfinance plotly
 import streamlit as st
 from datetime import date
-
+import matplotlib.pyplot as plt
 import yfinance as yf
 from fbprophet import Prophet
 from fbprophet.plot import plot_plotly
 from plotly import graph_objs as go
+import pandas_datareader as datareader
 
 START = "2015-01-01"
 TODAY = date.today().strftime("%Y-%m-%d")
 
 st.title('Stock Forecast App')
 
-stocks = ('GOOG', 'AAPL', 'MSFT', 'GME')
-selected_stock = st.selectbox('Select dataset for prediction', stocks)
+
+selected_stock = st.text_input('Enter Stock Ticker', 'AAPL')
 
 n_years = st.slider('Years of prediction:', 1, 4)
 period = n_years * 365
@@ -63,3 +64,23 @@ st.plotly_chart(fig1)
 st.write("Forecast components")
 fig2 = m.plot_components(forecast)
 st.write(fig2)
+
+# Moving Averages
+
+df = datareader.DataReader(selected_stock, 'yahoo', START, TODAY)
+
+st.subheader('Closing Price vs Time chart with 100MA')
+ma100 = df.Close.rolling(100).mean()
+fig = plt.figure(figsize = (20,6))
+plt.plot(ma100, 'lime')
+plt.plot(df.Close, 'b')
+st.pyplot(fig)
+
+st.subheader('Closing Price vs Time chart with 100MA & 200MA')
+ma100 = df.Close.rolling(100).mean()
+ma200 = df.Close.rolling(200).mean()
+fig = plt.figure(figsize = (20,6))
+plt.plot(ma100, 'lime')
+plt.plot(ma200, 'r')
+plt.plot(df.Close, 'b')
+st.pyplot(fig)
